@@ -3,7 +3,6 @@ import concurrent
 import concurrent.futures
 import gc
 import time
-from pprint import pprint
 from typing import Any
 
 import numpy as np
@@ -80,9 +79,8 @@ def main(args):
         Dictionary of command line arguments.
     """
 
-    # Initialize the parameters
-    pprint(args)
-    params, comet_image = parse_comet(args)
+    # Parse the comet parameters
+    params, comet_image, constants = parse_comet(args)
     comet_name = params["comet_name"]
     num_iter = params["mc_kwargs"]["num_iter"]
 
@@ -112,7 +110,7 @@ def main(args):
 
     start_time = time.time()
     dao = CometBeanDAO(comet_name=params["comet_name"])
-    comet_bean = dao.create_comet_bean()
+    comet_bean = dao.create_comet_bean(constants)
     comet = Comet(comet_bean)
 
     best_fit = {

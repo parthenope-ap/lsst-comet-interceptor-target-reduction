@@ -2,6 +2,7 @@ import importlib
 from typing import Any
 
 import pandas as pd
+from lsst_comet_interceptor_target_reduction.comet_bean_dao import CONSTANTS
 from lsst_comet_interceptor_target_reduction.logger import Logger
 
 logger = Logger()
@@ -77,4 +78,6 @@ def parse_comet(args: dict[str, Any]) -> tuple[dict[str, Any], pd.DataFrame]:
         logger.error(f"File {comet_name}/{comet_name}.txt not found.")
         raise e
 
-    return params, comet_image
+    loaded_constants = {const: getattr(constants_module, const, None) for const in CONSTANTS}
+
+    return params, comet_image, loaded_constants

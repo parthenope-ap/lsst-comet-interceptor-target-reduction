@@ -58,9 +58,31 @@
 #                     .set_mod_ie(MOD_IE)
 #                     .build())
 #         return comet_bean
-import importlib
-
 from .comet_bean import CometBean
+
+# Define a list of required constants and load them
+CONSTANTS = [
+    "KEPLER_CONSTANT_1",
+    "KEPLER_CONSTANT_2",
+    "OBLIQUITY_OF_THE_ECLIPTIC",
+    "ANOMALY",
+    "ASCENDING_NODE",
+    "ARGUMENT_OF_PERIHELION",
+    "INCLINATION",
+    "PERIHELION_DISTANCE",
+    "ECCENTRICITY",
+    "RIGHT_ASCENSION",
+    "DECLINATION",
+    "TRUE_ANOMALY",
+    "GEOCENTRIC_DISTANCE",
+    "NUCLUES_POSITION",
+    "EARTH_SUN_DISTANCE",
+    "X1",
+    "Y1",
+    "X2",
+    "Y2",
+    "MOD_IE",
+]
 
 
 class CometBeanDAO:
@@ -80,71 +102,43 @@ class CometBeanDAO:
         """
         self.comet_name = comet_name
 
-    def create_comet_bean(self) -> CometBean:
+    def create_comet_bean(self, constants: dict) -> CometBean:
         """
         Creates a CometBean object using constants loaded from the specified module.
 
+        Parameters
+        ----------
+        constants : dict
+            A dictionary containing the loaded constants for the comet.
         Returns
         -------
         CometBean
             A CometBean object containing the loaded constants.
         """
-        # Dynamically import the module containing constants
-        try:
-            constants_module = importlib.import_module(f"input.{self.comet_name}.{self.comet_name}")
-        except ModuleNotFoundError as e:
-            raise ImportError(f"Could not find module for comet '{self.comet_name}'.") from e
-
-        # Define a list of required constants and load them
-        constants = [
-            "KEPLER_CONSTANT_1",
-            "KEPLER_CONSTANT_2",
-            "OBLIQUITY_OF_THE_ECLIPTIC",
-            "ANOMALY",
-            "ASCENDING_NODE",
-            "ARGUMENT_OF_PERIHELION",
-            "INCLINATION",
-            "PERIHELION_DISTANCE",
-            "ECCENTRICITY",
-            "RIGHT_ASCENSION",
-            "DECLINATION",
-            "TRUE_ANOMALY",
-            "GEOCENTRIC_DISTANCE",
-            "NUCLUES_POSITION",
-            "EARTH_SUN_DISTANCE",
-            "X1",
-            "Y1",
-            "X2",
-            "Y2",
-            "MOD_IE",
-        ]
-
-        # Load constants using getattr, defaulting to None if not found
-        loaded_constants = {const: getattr(constants_module, const, None) for const in constants}
 
         # Create a CometBean object using the Builder pattern
         comet_bean = (
             CometBean.Builder()
-            .set_kepler_constant_1(loaded_constants["KEPLER_CONSTANT_1"])
-            .set_kepler_constant_2(loaded_constants["KEPLER_CONSTANT_2"])
-            .set_obliquity_of_the_ecliptic(loaded_constants["OBLIQUITY_OF_THE_ECLIPTIC"])
-            .set_anomaly(loaded_constants["ANOMALY"])
-            .set_ascending_node(loaded_constants["ASCENDING_NODE"])
-            .set_argument_of_perihelion(loaded_constants["ARGUMENT_OF_PERIHELION"])
-            .set_inclination(loaded_constants["INCLINATION"])
-            .set_perihelion_distance(loaded_constants["PERIHELION_DISTANCE"])
-            .set_eccentricity(loaded_constants["ECCENTRICITY"])
-            .set_right_ascension(loaded_constants["RIGHT_ASCENSION"])
-            .set_declination(loaded_constants["DECLINATION"])
-            .set_true_anomaly(loaded_constants["TRUE_ANOMALY"])
-            .set_geocentric_distance(loaded_constants["GEOCENTRIC_DISTANCE"])
-            .set_nucleus_position(loaded_constants["NUCLUES_POSITION"])
-            .set_earth_sun_distance(loaded_constants["EARTH_SUN_DISTANCE"])
-            .set_x1(loaded_constants["X1"])
-            .set_y1(loaded_constants["Y1"])
-            .set_x2(loaded_constants["X2"])
-            .set_y2(loaded_constants["Y2"])
-            .set_mod_ie(loaded_constants["MOD_IE"])
+            .set_kepler_constant_1(constants["KEPLER_CONSTANT_1"])
+            .set_kepler_constant_2(constants["KEPLER_CONSTANT_2"])
+            .set_obliquity_of_the_ecliptic(constants["OBLIQUITY_OF_THE_ECLIPTIC"])
+            .set_anomaly(constants["ANOMALY"])
+            .set_ascending_node(constants["ASCENDING_NODE"])
+            .set_argument_of_perihelion(constants["ARGUMENT_OF_PERIHELION"])
+            .set_inclination(constants["INCLINATION"])
+            .set_perihelion_distance(constants["PERIHELION_DISTANCE"])
+            .set_eccentricity(constants["ECCENTRICITY"])
+            .set_right_ascension(constants["RIGHT_ASCENSION"])
+            .set_declination(constants["DECLINATION"])
+            .set_true_anomaly(constants["TRUE_ANOMALY"])
+            .set_geocentric_distance(constants["GEOCENTRIC_DISTANCE"])
+            .set_nucleus_position(constants["NUCLUES_POSITION"])
+            .set_earth_sun_distance(constants["EARTH_SUN_DISTANCE"])
+            .set_x1(constants["X1"])
+            .set_y1(constants["Y1"])
+            .set_x2(constants["X2"])
+            .set_y2(constants["Y2"])
+            .set_mod_ie(constants["MOD_IE"])
             .build()
         )
 
