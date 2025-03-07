@@ -149,9 +149,10 @@ _html/
 # Project initialization script
 .initialize_new_project.sh
 
-src/lsst_comet_interceptor_target_reduction/input/**/*.sav
-src/lsst_comet_interceptor_target_reduction/input/**/*.pro
-src/lsst_comet_interceptor_target_reduction/input/**/*.txt
-src/lsst_comet_interceptor_target_reduction/input/**/*.ps
-src/lsst_comet_interceptor_target_reduction/input/**/*.jpg
-src/lsst_comet_interceptor_target_reduction/input/**/*.pdf
+input/**/*.sav
+input/**/*.pro
+input/**/*.txt
+input/**/*.ps
+input/**/*.jpg
+input/**/*.pdf
+output/
