@@ -151,7 +151,7 @@ _html/
 
 input/**/*.sav
 input/**/*.pro
-input/**/*.txt
+input/**/info.txt
 input/**/*.ps
 input/**/*.jpg
 input/**/*.pdf
