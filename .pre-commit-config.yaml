@@ -11,16 +11,16 @@ repos:
         description: Compare current template version against latest
         verbose: true
     # Clear output from jupyter notebooks so that only the input cells are committed.
-  - repo: local
-    hooks:
-      - id: jupyter-nb-clear-output
-        name: Clear output from Jupyter notebooks
-        description: Clear output from Jupyter notebooks.
-        files: \.ipynb$
-        exclude: ^docs/pre_executed
-        stages: [pre-commit]
-        language: system
-        entry: jupyter nbconvert --clear-output
+  # - repo: local
+  #   hooks:
+  #     - id: jupyter-nb-clear-output
+  #       name: Clear output from Jupyter notebooks
+  #       description: Clear output from Jupyter notebooks.
+  #       files: \.ipynb$
+  #       exclude: ^docs/pre_executed
+  #       stages: [pre-commit]
+  #       language: system
+  #       entry: jupyter nbconvert --clear-output
     # Prevents committing directly branches named 'main' and 'master'.
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -91,12 +91,12 @@ repos:
     # github workflow script, the coverage is run against the installed package
     # and uploaded to Codecov by calling pytest like so:
     # `python -m pytest --cov=<package_name> --cov-report=xml`
-  - repo: local
-    hooks:
-      - id: pytest-check
-        name: Run unit tests
-        description: Run unit tests with pytest.
-        entry: bash -c "if python -m pytest --co -qq; then python -m pytest --cov=./src --cov-report=html; fi"
-        language: system
-        pass_filenames: false
-        always_run: true
+  # - repo: local
+  #   hooks:
+  #     - id: pytest-check
+  #       name: Run unit tests
+  #       description: Run unit tests with pytest.
+  #       entry: bash -c "if python -m pytest --co -qq; then python -m pytest --cov=./src --cov-report=html; fi"
+  #       language: system
+  #       pass_filenames: false
+  #       always_run: true
