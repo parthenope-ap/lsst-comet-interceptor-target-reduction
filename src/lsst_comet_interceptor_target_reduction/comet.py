@@ -1,9 +1,9 @@
 import math
 
 import numpy as np
-from logger import Logger
 
-from lsst_comet_interceptor_target_reduction.comet_bean import CometBean
+from .comet_bean import CometBean
+from .logger import Logger
 
 logger = Logger()
 
@@ -61,7 +61,7 @@ class Comet:
         self.__x2 = np.double(self.__x2) * u
         self.__y2 = np.double(self.__y2) * u
 
-    def intermediate_computations(self) -> tuple[int, float]:
+    def perform_intermediate_computations(self) -> tuple[int, float]:
         """
         Perform intermediate computations for the comet's orbit.
 
@@ -380,7 +380,7 @@ class Comet:
         return (self.__x1, self.__y1, self.__x2, self.__y2)
 
     @property
-    def rotation_matrix(self) -> np.ndarray:
+    def orbital_to_image_rotation_matrix(self) -> np.ndarray:
         """Get the rotation matrix."""
         return self.__orbital_to_image_rotation_matrix
 

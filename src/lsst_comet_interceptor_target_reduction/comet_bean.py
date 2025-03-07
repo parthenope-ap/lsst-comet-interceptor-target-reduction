@@ -6,7 +6,7 @@ class CometBean:
     A class used to represent a Comet with various orbital and positional parameters.
     """
 
-    def __init__(self, builder):
+    def __init__(self, builder: "CometBean.Builder"):
         self._kernel_rotation_matrix: tuple[int, int] = builder.kernel_rotation_matrix
         self._kepler_constant_1: Optional[float] = builder.kepler_constant_1
         self._kepler_constant_2: Optional[float] = builder.kepler_constant_2

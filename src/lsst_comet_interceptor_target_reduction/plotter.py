@@ -1,119 +1,12 @@
-import math
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from logger import Logger
+
+from .logger import Logger
 
 logger = Logger()
-
-
-def compute_plot(
-    matrix_size: int,
-    comet: np.ndarray,
-    montecarlo_simulation: np.ndarray,
-    portion_comet: tuple[int, int, int, int],
-    sky_background_value: float,
-    threshold_min: float,
-    perihelion_distance: float,
-    eccentricity: float,
-    multiplier: float,
-    anomaly: float,
-    binning: int = 1,
-    minimum_size: int = 100,
-    comet_name: str = "comet",
-) -> list:
-    """
-    Compute the plot data for the comet and Monte Carlo simulation.
-
-    Parameters
-    ----------
-    matrix_size : int
-        Size of the plot grid.
-    comet : np.ndarray
-        2D array representing the comet image data.
-    montecarlo_simulation : np.ndarray
-        2D array of Monte Carlo simulation data.
-    portion_comet : tuple[int, int, int, int]
-        The portion defined as (start_row, end_row, start_col, end_col).
-    sky_background_value : float
-        Value of the sky background to be subtracted from the comet data.
-    threshold_min : float
-        Minimum threshold value for the comet and Monte Carlo data.
-    perihelion_distance : float
-        Perihelion distance of the comet.
-    eccentricity : float
-        Eccentricity of the comet's orbit.
-    multiplier : float
-        Multiplier for scaling the simulation data.
-    anomaly : float
-        Anomaly value for the comet's orbit.
-    binning : int, optional
-        Binning factor for the comet data (default is 1).
-    minimum_size : int, optional
-        Minimum required size for the portion (default is 100).
-    comet_name : str, optional
-        Name of the comet for file naming (default is 'comet').
-
-    Returns
-    -------
-    list
-        List containing the maximum Monte Carlo value, comet data, and Monte Carlo simulation data.
-    """
-    logger.info("Computing plot...")
-    max_montecarlo_value = 0.0
-    de = 0.0
-    fit_error = 0.0
-    row = col = matrix_size
-    max_montecarlo_value = max(max(row) for row in montecarlo_simulation)
-
-    try:
-        comet_image = pd.read_csv(f"input/{comet_name}/{comet_name}.txt", sep="\\s+")
-    except FileNotFoundError:
-        logger.error(f"File {comet_name}/{comet_name}.txt not found.")
-        raise
-
-    # Check and adjust the portion if necessary
-    portion_comet = check_comet_portion_size(comet_image, portion_comet, minimum_size)
-    # Portion containing the comet. How to identify it automatically (without manual selection)?
-    comet_portion = comet_image.iloc[portion_comet[0] : portion_comet[1], portion_comet[2] : portion_comet[3]]
-    for i in range(10):
-        for j in range(10):
-            de += 0.01 * comet_portion.iloc[i, j]
-
-    logger.info("Computing binning...")
-    for i in range(matrix_size):
-        for j in range(matrix_size):
-            for k in range(binning):
-                for n in range(binning):
-                    comet[i, j] += comet_portion.iloc[binning * i + k, binning * j + n]
-            # Here you could check the division
-            comet[i, j] /= np.double(binning**2)
-
-    for i in range(row):
-        for j in range(col):
-            if comet[i, j] <= np.double(sky_background_value):
-                comet[i, j] = 0.0
-            if comet[i, j] > np.double(sky_background_value):
-                comet[i, j] -= np.double(sky_background_value)
-            am = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value - comet[i, j]
-            om = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value + comet[i, j]
-            montecarlo_value = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value
-            if montecarlo_value > np.double(threshold_min) and comet[i, j] > np.double(threshold_min):
-                fit_error += am**2 / (om**2)
-    result = (
-        perihelion_distance * (1.0 + eccentricity) / (1.0 + eccentricity * math.cos(0.1 * math.pi * anomaly))
-    )
-    fit_error = 2.0 * fit_error / (matrix_size * matrix_size)
-
-    logger.info("****** Some result *******")
-    logger.info(f"Max montecarlo value: {max_montecarlo_value}")
-    logger.info(f"Result: {result}")
-    logger.info(f"De: {de}")
-    logger.info(f"Fit error: {fit_error}")
-    logger.info("**************************")
-    return [max_montecarlo_value, comet, montecarlo_simulation]
 
 
 def clamp(value: float, min_val: float, max_val: float) -> float:
@@ -312,15 +205,15 @@ def plot_isofote(
 
 
 def check_comet_portion_size(
-    comet_image: np.ndarray, portion_comet: tuple[int, int, int, int], minimum_size: int = 100
+    comet_image: pd.DataFrame, portion_comet: tuple[int, int, int, int], minimum_size: int = 100
 ) -> tuple[int, int, int, int]:
     """
     Check and adjust the portion size of the comet image to ensure it meets the minimum size requirement.
 
     Parameters
     ----------
-    comet_image : np.ndarray
-        The image of the comet as a numpy array.
+    comet_image : pd.DataFrame
+        DataFrame containing the comet image data.
     portion_comet : tuple[int, int, int, int]
         The portion defined as (start_row, end_row, start_col, end_col).
     minimum_size : int, optional
@@ -357,7 +250,7 @@ def check_comet_portion_size(
 
 
 def recompute_portion(
-    comet_image: np.ndarray,
+    comet_image: pd.DataFrame,
     portion_comet: tuple[int, int, int, int],
     minimum_size: int,
     start_idx: int,
@@ -369,8 +262,8 @@ def recompute_portion(
 
     Parameters
     ----------
-    comet_image : np.ndarray
-        The image of the comet as a numpy array.
+    comet_image : pd.DataFrame
+        DataFrame containing the comet image data.
     portion_comet : tuple[int, int, int, int]
         The portion defined as (start_row, end_row, start_col, end_col).
     minimum_size : int

@@ -60,7 +60,7 @@
 #         return comet_bean
 import importlib
 
-from comet_bean import CometBean
+from .comet_bean import CometBean
 
 
 class CometBeanDAO:
