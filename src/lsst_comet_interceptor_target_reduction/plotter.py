@@ -240,10 +240,10 @@ def check_comet_portion_size(
             logger.warning(f"Width is too small ({current_width} < {minimum_size}). Recomputing...")
             portion_comet = recompute_portion(comet_image, portion_comet, minimum_size, 2, 3, 1)
 
-        logger.info(f"Final portion after checks: {portion_comet}")
+        # logger.info(f"Final portion after checks: {portion_comet}")
 
-    except Exception as e:
-        logger.error(f"Error while checking comet portion size: {e}")
+    except Exception as _:
+        # logger.error(f"Error while checking comet portion size: {e}")
         raise
 
     return portion_comet
@@ -297,8 +297,8 @@ def recompute_portion(
 
         logger.info(f"Recomputed portion: {tuple(portion_comet)}")
         return tuple(portion_comet)
-    except Exception as e:
-        logger.error(f"Error while recomputing portion: {e}")
+    except Exception as _:
+        # logger.error(f"Error while recomputing portion: {e}")
         raise
 
 
