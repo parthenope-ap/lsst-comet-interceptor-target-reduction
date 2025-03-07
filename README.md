@@ -16,6 +16,7 @@ git clone https://github.com/parthenope-ap/lsst-comet-interceptor-target-reducti
 cd lsst-comet-interceptor-target-reduction
 conda env create -f environment.yml
 conda activate lsst-comet
+pip install -e .
 ```
 
 ## Examples
