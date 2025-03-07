@@ -114,9 +114,9 @@ def plot_isofote(
     plt.figure()
     plt.rcParams["savefig.format"] = "png"
 
-    # Graph layout configuration
+    # Configure the layout of the plot
     fig, ax = plt.subplots()
-    fig.set_size_inches(8, 8)  # Set the size of the graph in inches
+    fig.set_size_inches(8, 8)  # Set the size of the plot in inches
     plt.subplots_adjust(left=0.2, bottom=0.09, right=0.9, top=0.99)
 
     # Define the data to be plotted
@@ -242,15 +242,15 @@ def check_comet_portion_size(
 
         # logger.info(f"Final portion after checks: {portion_comet}")
 
-    except Exception as _:
-        # logger.error(f"Error while checking comet portion size: {e}")
+    except Exception as e:
+        logger.error(f"Error while checking comet portion size: {e}")
         raise
 
     return portion_comet
 
 
 def recompute_portion(
-    comet_image: pd.DataFrame,
+    comet_image: np.ndarray,
     portion_comet: tuple[int, int, int, int],
     minimum_size: int,
     start_idx: int,
@@ -295,10 +295,11 @@ def recompute_portion(
         # Adjust the starting and ending indices while respecting image boundaries
         portion_comet[end_idx] = min(comet_image.shape[axis], portion_comet[end_idx] + extra_size)
 
-        logger.info(f"Recomputed portion: {tuple(portion_comet)}")
+        # logger.info(f"Recomputed portion: {tuple(portion_comet)}")
         return tuple(portion_comet)
-    except Exception as _:
-        # logger.error(f"Error while recomputing portion: {e}")
+
+    except Exception as e:
+        logger.error(f"Error while recomputing portion: {e}")
         raise
 
 

@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 
+from .comet_bean import CometBean
 from .plotter import check_comet_portion_size
 
 
@@ -21,41 +22,34 @@ def scoring_fn(
     minimum_size: int = 100,
 ):
     """
-    Scoring function used for evaluating the fit error of the Monte Carlo simulations.
+    Scoring function for the Monte Carlo simulation.
 
     Parameters
     ----------
     comet_image : pd.DataFrame
-        DataFrame containing the comet image data.
+        Dataframe containing the comet image data.
     montecarlo_simulation : np.ndarray
-        2D array of Monte Carlo simulation data.
+        The Monte Carlo simulation data.
     matrix_size : int
-        Size of the plot grid.
-    comet : np.ndarray
-        2D array representing the comet image data.
-    portion_comet : tuple[int, int, int, int]
-        The portion defined as (start_row, end_row, start_col, end_col).
+        The size of the matrix.
+    portion_comet : tuple
+        The portion of the comet image.
     sky_background_value : float
-        Value of the sky background to be subtracted from the comet data.
+        The sky background value.
     threshold_min : float
-        Minimum threshold value for the comet and Monte Carlo data.
+        The minimum threshold value.
     perihelion_distance : float
-        Perihelion distance of the comet.
+        The perihelion distance.
     eccentricity : float
-        Eccentricity of the comet's orbit.
+        The eccentricity.
     multiplier : float
-        Multiplier for scaling the simulation data.
+        The multiplier value.
     anomaly : float
-        Anomaly value for the comet's orbit.
-    binning : int, optional
-        Binning factor for the comet data (default is 1).
-    minimum_size : int, optional
-        Minimum required size for the portion (default is 100).
-
-    Returns
-    -------
-    list
-        List containing the maximum Monte Carlo value, comet data, and Monte Carlo simulation data.
+        The anomaly value.
+    binning : int
+        The binning value.
+    minimum_size : int
+        The minimum size value.
     """
 
     comet = np.zeros((matrix_size, matrix_size))
@@ -67,6 +61,8 @@ def scoring_fn(
 
     # Check and adjust the portion if necessary
     portion_comet = check_comet_portion_size(comet_image, portion_comet, minimum_size)
+
+    # TODO: identify automatically the portion of the comet image to use
     comet_portion = comet_image.iloc[portion_comet[0] : portion_comet[1], portion_comet[2] : portion_comet[3]]
     for i in range(10):
         for j in range(10):
@@ -88,58 +84,26 @@ def scoring_fn(
                 comet[i, j] -= np.double(sky_background_value)
             am = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value - comet[i, j]
             om = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value + comet[i, j]
-            if comet[i, j] > np.double(sky_background_value):
-                comet[i, j] -= np.double(sky_background_value)
-            am = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value - comet[i, j]
-            om = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value + comet[i, j]
-            montecarlo_value = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value
-            if montecarlo_value > np.double(threshold_min) and comet[i, j] > np.double(threshold_min):
+
+            num = np.double(multiplier) * montecarlo_simulation[i, j] / max_montecarlo_value
+            if num > np.double(threshold_min) and comet[i, j] > np.double(threshold_min):
                 fit_error += am**2 / (om**2)
     result = (
         perihelion_distance * (1.0 + eccentricity) / (1.0 + eccentricity * math.cos(0.1 * math.pi * anomaly))
     )
     fit_error = 2.0 * fit_error / (matrix_size * matrix_size)
+
     return [max_montecarlo_value, comet, montecarlo_simulation, result, de, fit_error]
 
 
 class MonteCarlo:
     """
-    Monte Carlo simulation class for comet data analysis.
-
-    This class performs Monte Carlo simulations to fit comet data and compute various parameters
-    related to the comet's orbit and characteristics.
-
-    Attributes
-    ----------
-    comet : np.ndarray
-        Comet data.
-    dim_matrix_image : int
-        Dimension of the matrix image.
-    num_iter : int
-        Number of iterations for the Monte Carlo simulation.
-    depend : bool, optional
-        Dependency flag (default is False).
-    t_size : int, optional
-        Size of the time array (default is 3600).
-    param_00 : float, optional
-        Parameter 00 for the simulation (default is 0.05).
-    param_01 : float, optional
-        Parameter 01 for the simulation (default is 360.0).
-    param_02 : float, optional
-        Parameter 02 for the simulation (default is 0.9).
-    param_03 : float, optional
-        Parameter 03 for the simulation (default is 1.0).
-    param_3 : float, optional
-        Parameter 3 for the simulation (default is 0.009).
-    exp_val : float, optional
-        Exponential value for the simulation (default is -2.0).
-    k : int, optional
-        Constant for the simulation (default is 1).
+    Monte Carlo simulation class for comet dust tail simulation.
     """
 
     def __init__(
         self,
-        comet: np.ndarray,
+        comet: CometBean,
         dim_matrix_image: int,
         num_iter: int,
         depend: bool = False,
@@ -150,10 +114,41 @@ class MonteCarlo:
         param_03: float = 1.0,
         param_3: float = 0.009,
         exp_val: float = -2.0,
-        k: int = 1,
+        k: float = 1.0,
     ):
+        """
+        Initializes the Monte Carlo simulation object with the given comet and parameters.
+
+        Parameters
+        ----------
+        comet : CometBean
+            The comet object containing the necessary parameters.
+        dim_matrix_image : int
+            The dimension of the image matrix.
+        num_iter : int
+            The number of iterations for the Monte Carlo simulation.
+        depend : bool
+            A flag indicating whether the Monte Carlo simulation depends on the comet's position.
+        t_size : int
+            The size of the temporary array.
+        param_00 : float
+            The parameter for the Monte Carlo simulation.
+        param_01 : float
+            The parameter for the Monte Carlo simulation.
+        param_02 : float
+            The parameter for the Monte Carlo simulation.
+        param_03 : float
+            The parameter for the Monte Carlo simulation.
+        param_3 : float
+            The parameter for the Monte Carlo simulation.
+        exp_val : float
+            The exponent value for the Monte Carlo simulation.
+        k : float
+            The k parameter for the Monte Carlo simulation.
+        """
+
         self.comet = comet
-        self.__KERNEL_ROTATION_MATRIX = comet.kernel_rotation_matrix
+        self.__KERNEL_ROTATION_MATRIX = comet.get_kernel_rotation_matrix()
         self.nc = dim_matrix_image
         self.num_iter_montecarlo = num_iter
         self.t = np.zeros(t_size)
@@ -162,10 +157,13 @@ class MonteCarlo:
         self.z = np.zeros(self.__KERNEL_ROTATION_MATRIX)
         self.f = np.zeros((self.nc, self.nc))
         self.h = np.zeros((1600, 1600), dtype=int)
-        self.x1, self.x2, self.y1, self.y2 = comet.nucleus_coordinates
-        self.r = comet.orbital_to_image_rotation_matrix
-        self.q = comet.ecliptic_to_equatorial_rotation_matrix
-        self.z = comet.temp_matrix
+        self.x1 = comet.get_nucleus_coordinates()[0]
+        self.x2 = comet.get_nucleus_coordinates()[2]
+        self.y1 = comet.get_nucleus_coordinates()[1]
+        self.y2 = comet.get_nucleus_coordinates()[3]
+        self.r = comet.get_orbital_to_image_rotation_matrix()
+        self.q = comet.get_ecliptic_to_equatorial_rotation_matrix()
+        self.z = comet.get_temp_matrix()
         self.depend = depend
         self.param_00 = param_00
         self.param_01 = param_01
@@ -179,23 +177,26 @@ class MonteCarlo:
 
     def fit(self) -> np.ndarray:
         """
-        Perform the Monte Carlo simulation to fit the comet data.
+        Fit method for Monte Carlo simulation.
 
         Returns
         -------
-        np.ndarray
-            2D array representing the fitted comet data.
+        np.array
+            The Monte Carlo simulation data.
         """
+        # logger.info("Monte Carlo simulation...")
         comet = self.comet
-        g1 = comet.kepler_constant_1
-        g2 = comet.kepler_constant_2
-        qc = comet.perihelion_distance
-        ec = comet.eccentricity
-        ia = comet.anomaly
-        ie, ac = comet.perform_intermediate_computations()
+        g1 = comet.get_kepler_constant_1()
+        g2 = comet.get_kepler_constant_2()
+        qc = comet.get_perihelion_distance()
+        ec = comet.get_eccentricity()
+        ia = comet.get_anomaly()
+        ie, ac = comet.intermediate_computations()
         pig = np.double(math.atan(1.0) / 45.0)
         nc = self.nc
 
+        # logger.warning(f"ie: {ie}, ac: {ac}")
+        # logger.warning(f"ia: {ia}")
         if ec == 1.0:
             y = g1 * math.sqrt(2.0 * qc**3)
             for i in range(ie - ia + 1):

@@ -61,9 +61,9 @@ def perform_mc_search(
     ra, g, f, result, de, fit_error = scoring_fn(
         comet_image=comet_image,
         montecarlo_simulation=f,
-        perihelion_distance=comet.perihelion_distance,
-        eccentricity=comet.eccentricity,
-        anomaly=comet.anomaly,
+        perihelion_distance=comet.get_perihelion_distance(),
+        eccentricity=comet.get_eccentricity(),
+        anomaly=comet.get_anomaly(),
         **scoring_fn_kwargs,
     )
 

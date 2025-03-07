@@ -69,19 +69,25 @@ class CometBeanDAO:
     Dynamically loads constants from a specified module for the given comet.
     """
 
-    def __init__(self, comet_name: str):
+    def __init__(self, comet_name: str) -> None:
         """
-        Initializes the DAO with the given comet name.
+        Initializes the DAO with the name of the comet.
 
-        :param comet_name: The name of the comet (used to dynamically load constants).
+        Parameters
+        ----------
+        comet_name : str
+            The name of the comet to load constants for.
         """
         self.comet_name = comet_name
 
     def create_comet_bean(self) -> CometBean:
         """
-        Creates and returns a CometBean object using constants dynamically loaded from a module.
+        Creates a CometBean object using constants loaded from the specified module.
 
-        :return: A CometBean object.
+        Returns
+        -------
+        CometBean
+            A CometBean object containing the loaded constants.
         """
         # Dynamically import the module containing constants
         try:

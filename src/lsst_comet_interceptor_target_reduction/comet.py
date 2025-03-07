@@ -10,36 +10,49 @@ logger = Logger()
 
 class Comet:
     """
-    A class to represent a comet and perform various computations related to its orbit and position.
+    A class used to represent a Comet with various orbital and positional parameters
+    and methods for computing the nucleus coordinates and rotation matrix.
     """
 
     def __init__(self, comet_bean: CometBean) -> None:
-        self.__KERNEL_ROTATION_MATRIX: tuple[int, int] = (3, 3)
+        """
+        Initializes the comet object with the given CometBean object.
 
-        self.__kepler_constant_1: float = comet_bean.kepler_constant_1
-        self.__kepler_constant_2: float = comet_bean.kepler_constant_2
-        self.__obliquity_of_the_ecliptic: float = comet_bean.obliquity_of_the_ecliptic
-        self.__anomaly: float = comet_bean.anomaly
-        self.__ascending_node: float = comet_bean.ascending_node
-        self.__argument_of_perihelion: float = comet_bean.argument_of_perihelion
-        self.__inclination: float = comet_bean.inclination
-        self.__perihelion_distance: float = comet_bean.perihelion_distance
-        self.__eccentricity: float = comet_bean.eccentricity
-        self.__right_ascension: float = comet_bean.right_ascension
-        self.__declination: float = comet_bean.declination
-        self.__true_anomaly: float = comet_bean.true_anomaly
-        self.__geocentric_distance: float = comet_bean.geocentric_distance
-        self.__nucleus_position: float = comet_bean.nucleus_position
-        self.__earth_sun_distance: float = comet_bean.earth_sun_distance
-        self.__x1: float = comet_bean.x1
-        self.__x2: float = comet_bean.x2
-        self.__y1: float = comet_bean.y1
-        self.__y2: float = comet_bean.y2
-        self.__mod_ie: float = comet_bean.mod_ie
+        Parameters
+        ----------
+        comet_bean : CometBean
+            The CometBean object containing the comet parameters.
+        """
 
-        self.__orbital_to_image_rotation_matrix: np.ndarray = np.zeros(self.__KERNEL_ROTATION_MATRIX)
-        self.__ecliptic_to_equatorial_rotation_matrix: np.ndarray = np.zeros(self.__KERNEL_ROTATION_MATRIX)
-        self.__temp_matrix: np.ndarray = np.zeros(self.__KERNEL_ROTATION_MATRIX)
+        # Constants
+        self.__KERNEL_ROTATION_MATRIX = (3, 3)
+
+        # Assign values directly from the CometBean object
+        self.__kepler_constant_1 = comet_bean.kepler_constant_1
+        self.__kepler_constant_2 = comet_bean.kepler_constant_2
+        self.__obliquity_of_the_ecliptic = comet_bean.obliquity_of_the_ecliptic
+        self.__anomaly = comet_bean.anomaly
+        self.__ascending_node = comet_bean.ascending_node
+        self.__argument_of_perihelion = comet_bean.argument_of_perihelion
+        self.__inclination = comet_bean.inclination
+        self.__perihelion_distance = comet_bean.perihelion_distance
+        self.__eccentricity = comet_bean.eccentricity
+        self.__right_ascension = comet_bean.right_ascension
+        self.__declination = comet_bean.declination
+        self.__true_anomaly = comet_bean.true_anomaly
+        self.__geocentric_distance = comet_bean.geocentric_distance
+        self.__nucleus_position = comet_bean.nucleus_position
+        self.__earth_sun_distance = comet_bean.earth_sun_distance
+        self.__x1 = comet_bean.x1
+        self.__x2 = comet_bean.x2
+        self.__y1 = comet_bean.y1
+        self.__y2 = comet_bean.y2
+        self.__mod_ie = comet_bean.mod_ie
+
+        # Initialize matrices
+        self.__orbital_to_image_rotation_matrix = np.zeros(self.__KERNEL_ROTATION_MATRIX)
+        self.__ecliptic_to_equatorial_rotation_matrix = np.zeros(self.__KERNEL_ROTATION_MATRIX)
+        self.__temp_matrix = np.zeros(self.__KERNEL_ROTATION_MATRIX)
 
         # Compute image coordinates of the nucleus
         self.__compute_nucleus_coordinates()
@@ -49,9 +62,12 @@ class Comet:
         logger.info("Comet object created.")
 
     def __compute_nucleus_coordinates(self) -> None:
-        # 3600 ?
+        """
+        Compute the nucleus coordinates of the comet object.
+        """
+
         logger.info("Computing nucleus coordinates...")
-        u: float = (
+        u = (
             self.__earth_sun_distance
             * self.__geocentric_distance
             * math.tan(np.deg2rad(self.__nucleus_position) / np.double(3600))
@@ -61,22 +77,26 @@ class Comet:
         self.__x2 = np.double(self.__x2) * u
         self.__y2 = np.double(self.__y2) * u
 
-    def perform_intermediate_computations(self) -> tuple[int, float]:
+    def intermediate_computations(self) -> tuple[int, float]:
         """
-        Perform intermediate computations for the comet's orbit.
+        Perform intermediate computations for the comet object.
 
         Returns
         -------
-            tuple: A tuple containing 'ie' and 'ac'.
+        tuple[int, float]
+            A tuple containing the intermediate computations.
         """
-        # Intermediate computations
-        ie: int = int(self.__mod_ie * self.__true_anomaly)
-        ac: float = math.tan(0.5 * np.deg2rad(self.__true_anomaly))
+        ie = int(self.__mod_ie * self.__true_anomaly)
+        ac = math.tan(0.5 * np.deg2rad(self.__true_anomaly))
         if ac < 0.0:
             ie -= 1
         return ie, ac
 
     def __compute_rotation_matrix(self) -> None:
+        """
+        Compute the rotation matrix of the comet object.
+        """
+
         # Compute the orbital to image plane rotation matrix
         logger.info("Computing rotation matrix...")
         self.__orbital_to_image_rotation_matrix[0, 0] = math.cos(self.__ascending_node) * math.cos(
@@ -84,33 +104,41 @@ class Comet:
         ) - math.cos(self.__inclination) * math.sin(self.__argument_of_perihelion) * math.sin(
             self.__ascending_node
         )
+
         self.__orbital_to_image_rotation_matrix[0, 1] = -math.sin(self.__ascending_node) * math.cos(
             self.__argument_of_perihelion
         ) - math.cos(self.__inclination) * math.sin(self.__argument_of_perihelion) * math.cos(
             self.__ascending_node
         )
+
         self.__orbital_to_image_rotation_matrix[0, 2] = math.sin(self.__inclination) * math.sin(
             self.__argument_of_perihelion
         )
+
         self.__orbital_to_image_rotation_matrix[1, 0] = math.cos(self.__ascending_node) * math.sin(
             self.__argument_of_perihelion
         ) + math.cos(self.__inclination) * math.cos(self.__argument_of_perihelion) * math.sin(
             self.__ascending_node
         )
+
         self.__orbital_to_image_rotation_matrix[1, 1] = -math.sin(self.__ascending_node) * math.sin(
             self.__argument_of_perihelion
         ) + math.cos(self.__inclination) * math.cos(self.__argument_of_perihelion) * math.cos(
             self.__ascending_node
         )
+
         self.__orbital_to_image_rotation_matrix[1, 2] = -math.sin(self.__inclination) * math.cos(
             self.__argument_of_perihelion
         )
+
         self.__orbital_to_image_rotation_matrix[2, 0] = math.sin(self.__inclination) * math.sin(
             self.__ascending_node
         )
+
         self.__orbital_to_image_rotation_matrix[2, 1] = math.sin(self.__inclination) * math.cos(
             self.__ascending_node
         )
+
         self.__orbital_to_image_rotation_matrix[2, 2] = math.cos(self.__inclination)
 
         self.__temp_matrix[0, 0] = np.double(1.0)
@@ -149,242 +177,291 @@ class Comet:
                         self.__temp_matrix[i, j] * self.__ecliptic_to_equatorial_rotation_matrix[j, k]
                     )
 
-    @property
-    def header(self) -> str:
-        """Get the header."""
+    # Getter and setter methods for the attributes
+    def get_header(self):
+        """
+        Get the header of the comet object.
+        """
         return self.__header
 
-    @header.setter
-    def header(self, header: str) -> None:
-        """Set the header."""
+    def set_header(self, header):
+        """
+        Set the header of the comet object.
+        """
         self.__header = header
 
-    @property
-    def time_array(self) -> np.ndarray:
-        """Get the time array."""
+    def get_time_array(self):
+        """
+        Get the time array of the comet object.
+        """
         return self.__time_array
 
-    @time_array.setter
-    def time_array(self, time_array: np.ndarray) -> None:
-        """Set the time array."""
+    def set_time_array(self, time_array):
+        """
+        Set the time array of the comet object.
+        """
         self.__time_array = time_array
 
-    @property
-    def orbital_to_image_rotation_matrix(self) -> np.ndarray:
-        """Get the orbital to image rotation matrix."""
+    def get_orbital_to_image_rotation_matrix(self):
+        """
+        Get the orbital to image rotation matrix of the comet object.
+        """
         return self.__orbital_to_image_rotation_matrix
 
-    @orbital_to_image_rotation_matrix.setter
-    def orbital_to_image_rotation_matrix(self, matrix: np.ndarray) -> None:
-        """Set the orbital to image rotation matrix."""
+    def set_orbital_to_image_rotation_matrix(self, matrix):
+        """
+        Set the orbital to image rotation matrix of the comet object.
+        """
         self.__orbital_to_image_rotation_matrix = matrix
 
-    @property
-    def ecliptic_to_equatorial_rotation_matrix(self) -> np.ndarray:
-        """Get the ecliptic to equatorial rotation matrix."""
+    def get_ecliptic_to_equatorial_rotation_matrix(self):
+        """
+        Get the ecliptic to equatorial rotation matrix of the comet object.
+        """
         return self.__ecliptic_to_equatorial_rotation_matrix
 
-    @ecliptic_to_equatorial_rotation_matrix.setter
-    def ecliptic_to_equatorial_rotation_matrix(self, matrix: np.ndarray) -> None:
-        """Set the ecliptic to equatorial rotation matrix."""
+    def set_ecliptic_to_equatorial_rotation_matrix(self, matrix):
+        """
+        Set the ecliptic to equatorial rotation matrix of the comet object.
+        """
         self.__ecliptic_to_equatorial_rotation_matrix = matrix
 
-    @property
-    def temp_matrix(self) -> np.ndarray:
-        """Get the temporary matrix."""
+    def get_temp_matrix(self):
+        """
+        Get the temporary matrix of the comet object.
+        """
         return self.__temp_matrix
 
-    @temp_matrix.setter
-    def temp_matrix(self, matrix: np.ndarray) -> None:
-        """Set the temporary matrix."""
+    def set_temp_matrix(self, matrix):
+        """
+        Set the temporary matrix of the comet object.
+        """
         self.__temp_matrix = matrix
 
-    @property
-    def base_image(self) -> np.ndarray:
-        """Get the base image."""
+    def get_base_image(self):
+        """
+        Get the base image of the comet object.
+        """
         return self.__base_image
 
-    @base_image.setter
-    def base_image(self, image: np.ndarray) -> None:
-        """Set the base image."""
+    def set_base_image(self, image):
+        """
+        Set the base image of the comet object.
+        """
         self.__base_image = image
 
-    @property
-    def model_image(self) -> np.ndarray:
-        """Get the model image."""
+    def get_model_image(self):
+        """
+        Get the model image of the comet object.
+        """
         return self.__model_image
 
-    @model_image.setter
-    def model_image(self, image: np.ndarray) -> None:
-        """Set the model image."""
+    def set_model_image(self, image):
+        """
+        Set the model image of the comet object.
+        """
         self.__model_image = image
 
-    @property
-    def extended_image(self) -> np.ndarray:
-        """Get the extended image."""
+    def get_extended_image(self):
+        """
+        Get the extended image of the comet object.
+        """
         return self.__extended_image
 
-    @extended_image.setter
-    def extended_image(self, image: np.ndarray) -> None:
-        """Set the extended image."""
+    def set_extended_image(self, image):
+        """
+        Set the extended image of the comet object.
+        """
         self.__extended_image = image
 
-    @property
-    def comet_image(self) -> np.ndarray:
-        """Get the comet image."""
+    def get_comet_image(self):
+        """
+        Get the comet image of the comet object.
+        """
         return self.__comet_image
 
-    @comet_image.setter
-    def comet_image(self, image: np.ndarray) -> None:
-        """Set the comet image."""
+    def set_comet_image(self, image):
+        """
+        Set the comet image of the comet object.
+        """
         self.__comet_image = image
 
-    @property
-    def kepler_constant_1(self) -> float:
-        """Get the first Kepler constant."""
+    def get_kepler_constant_1(self):
+        """
+        Get the first Kepler constant of the comet object.
+        """
         return self.__kepler_constant_1
 
-    @property
-    def kepler_constant_2(self) -> float:
-        """Get the second Kepler constant."""
+    def get_kepler_constant_2(self):
+        """
+        Get the second Kepler constant of the comet object.
+        """
         return self.__kepler_constant_2
 
-    @property
-    def obliquity_of_the_ecliptic(self) -> float:
-        """Get the obliquity of the ecliptic."""
+    def get_obliquity_of_the_ecliptic(self):
+        """
+        Get the obliquity of the ecliptic of the comet object.
+        """
         return self.__obliquity_of_the_ecliptic
 
-    @property
-    def anomaly(self) -> float:
-        """Get the anomaly."""
+    def get_anomaly(self):
+        """
+        Get the anomaly of the comet object.
+        """
         return self.__anomaly
 
-    @anomaly.setter
-    def anomaly(self, anomaly: float) -> None:
-        """Set the anomaly."""
+    def set_anomaly(self, anomaly):
+        """
+        Set the anomaly of the comet object.
+        """
         self.__anomaly = anomaly
 
-    @property
-    def ascending_node(self) -> float:
-        """Get the ascending node."""
+    def get_ascending_node(self):
+        """
+        Get the ascending node of the comet object.
+        """
         return self.__ascending_node
 
-    @ascending_node.setter
-    def ascending_node(self, ascending_node: float) -> None:
-        """Set the ascending node."""
+    def set_ascending_node(self, ascending_node):
+        """
+        Set the ascending node of the comet object.
+        """
         self.__ascending_node = ascending_node
 
-    @property
-    def argument_of_perihelion(self) -> float:
-        """Get the argument of perihelion."""
+    def get_argument_of_perihelion(self):
+        """
+        Get the argument of perihelion of the comet object.
+        """
         return self.__argument_of_perihelion
 
-    @argument_of_perihelion.setter
-    def argument_of_perihelion(self, argument_of_perihelion: float) -> None:
-        """Set the argument of perihelion."""
+    def set_argument_of_perihelion(self, argument_of_perihelion):
+        """
+        Set the argument of perihelion of the comet object.
+        """
         self.__argument_of_perihelion = argument_of_perihelion
 
-    @property
-    def inclination(self) -> float:
-        """Get the inclination."""
+    def get_inclination(self):
+        """
+        Get the inclination of the comet object.
+        """
         return self.__inclination
 
-    @inclination.setter
-    def inclination(self, inclination: float) -> None:
-        """Set the inclination."""
+    def set_inclination(self, inclination):
+        """
+        Set the inclination of the comet object.
+        """
         self.__inclination = inclination
 
-    @property
-    def perihelion_distance(self) -> float:
-        """Get the perihelion distance."""
+    def get_perihelion_distance(self):
+        """
+        Get the perihelion distance of the comet object.
+        """
         return self.__perihelion_distance
 
-    @perihelion_distance.setter
-    def perihelion_distance(self, distance: float) -> None:
-        """Set the perihelion distance."""
+    def set_perihelion_distance(self, distance):
+        """
+        Set the perihelion distance of the comet object.
+        """
         self.__perihelion_distance = distance
 
-    @property
-    def eccentricity(self) -> float:
-        """Get the eccentricity."""
+    def get_eccentricity(self):
+        """
+        Get the eccentricity of the comet object.
+        """
         return self.__eccentricity
 
-    @eccentricity.setter
-    def eccentricity(self, eccentricity: float) -> None:
-        """Set the eccentricity."""
+    def set_eccentricity(self, eccentricity):
+        """
+        Set the eccentricity of the comet object.
+        """
         self.__eccentricity = eccentricity
 
-    @property
-    def right_ascension(self) -> float:
-        """Get the right ascension."""
+    def get_right_ascension(self):
+        """
+        Get the right ascension of the comet object.
+        """
         return self.__right_ascension
 
-    @right_ascension.setter
-    def right_ascension(self, right_ascension: float) -> None:
-        """Set the right ascension."""
+    def set_right_ascension(self, right_ascension):
+        """
+        Set the right ascension of the comet object.
+        """
         self.__right_ascension = right_ascension
 
-    @property
-    def declination(self) -> float:
-        """Get the declination."""
+    def get_declination(self):
+        """
+        Get the declination of the comet object.
+        """
         return self.__declination
 
-    @declination.setter
-    def declination(self, declination: float) -> None:
-        """Set the declination."""
+    def set_declination(self, declination):
+        """
+        Set the declination of the comet object.
+        """
         self.__declination = declination
 
-    @property
-    def true_anomaly(self) -> float:
-        """Get the true anomaly."""
+    def get_true_anomaly(self):
+        """
+        Get the true anomaly of the comet object.
+        """
         return self.__true_anomaly
 
-    @true_anomaly.setter
-    def true_anomaly(self, true_anomaly: float) -> None:
-        """Set the true anomaly."""
+    def set_true_anomaly(self, true_anomaly):
+        """
+        Set the true anomaly of the comet object.
+        """
         self.__true_anomaly = true_anomaly
 
-    @property
-    def geocentric_distance(self) -> float:
-        """Get the geocentric distance."""
+    def get_geocentric_distance(self):
+        """
+        Get the geocentric distance of the comet object.
+        """
         return self.__geocentric_distance
 
-    @geocentric_distance.setter
-    def geocentric_distance(self, distance: float) -> None:
-        """Set the geocentric distance."""
+    def set_geocentric_distance(self, distance):
+        """
+        Set the geocentric distance of the comet object.
+        """
         self.__geocentric_distance = distance
 
-    @property
-    def nucleus_position(self) -> float:
-        """Get the nucleus position."""
+    def get_nucleus_position(self):
+        """
+        Get the nucleus position of the comet object.
+        """
         return self.__nucleus_position
 
-    @nucleus_position.setter
-    def nucleus_position(self, position: float) -> None:
-        """Set the nucleus position."""
+    def set_nucleus_position(self, position):
+        """
+        Set the nucleus position of the comet object.
+        """
         self.__nucleus_position = position
 
-    @property
-    def earth_sun_distance(self) -> float:
-        """Get the Earth-Sun distance."""
+    def get_earth_sun_distance(self):
+        """
+        Get the Earth-Sun distance of the comet object.
+        """
         return self.__earth_sun_distance
 
-    @earth_sun_distance.setter
-    def earth_sun_distance(self, distance: float) -> None:
-        """Set the Earth-Sun distance."""
+    def set_earth_sun_distance(self, distance):
+        """
+        Set the Earth-Sun distance of the comet object.
+        """
         self.__earth_sun_distance = distance
 
-    @property
-    def nucleus_coordinates(self) -> tuple[float, float, float, float]:
-        """Get the nucleus coordinates."""
+    def get_nucleus_coordinates(self):
+        """
+        Get the nucleus coordinates of the comet object.
+        """
         return (self.__x1, self.__y1, self.__x2, self.__y2)
 
-    @property
-    def orbital_to_image_rotation_matrix(self) -> np.ndarray:
-        """Get the rotation matrix."""
+    def get_rotation_matrix(self):
+        """
+        Get the rotation matrix of the comet object.
+        """
         return self.__orbital_to_image_rotation_matrix
 
-    @property
-    def kernel_rotation_matrix(self) -> tuple[int, int]:
-        """Get the kernel rotation matrix."""
+    def get_kernel_rotation_matrix(self):
+        """
+        Get the kernel rotation matrix of the comet object.
+        """
         return self.__KERNEL_ROTATION_MATRIX
