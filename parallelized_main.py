@@ -50,6 +50,9 @@ def perform_mc_search(
     mc_kwargs = params["mc_kwargs"]
     scoring_fn_kwargs = params["scoring_fn_kwargs"]
 
+    # Remove the parameters that needs to be optimized
+    del mc_kwargs["param_3"], mc_kwargs["exp_val"], mc_kwargs["k"]
+
     # Create a Monte Carlo object with the comet
     monte_carlo = MonteCarlo(comet=comet, param_3=param_3, exp_val=exp_val, k=k, **mc_kwargs)
 

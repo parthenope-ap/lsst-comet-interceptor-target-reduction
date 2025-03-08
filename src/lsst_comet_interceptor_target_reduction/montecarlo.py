@@ -2,9 +2,13 @@ import math
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from .comet_bean import CometBean
+from .logger import Logger
 from .plotter import check_comet_portion_size
+
+logger = Logger()
 
 
 def scoring_fn(
@@ -175,16 +179,22 @@ class MonteCarlo:
         self.PARAM_1 = 180.0  # Costant
         self.PARAM_2 = 0.5  # Costant
 
-    def fit(self) -> np.ndarray:
+    def fit(self, verbose: bool = False) -> np.ndarray:
         """
         Fit method for Monte Carlo simulation.
+
+        Parameters
+        ----------
+        verbose : bool
+            A flag indicating whether to show the verbose output.
 
         Returns
         -------
         np.array
             The Monte Carlo simulation data.
         """
-        # logger.info("Monte Carlo simulation...")
+        if verbose:
+            logger.info("Monte Carlo simulation...")
         comet = self.comet
         g1 = comet.get_kepler_constant_1()
         g2 = comet.get_kepler_constant_2()
@@ -195,8 +205,9 @@ class MonteCarlo:
         pig = np.double(math.atan(1.0) / 45.0)
         nc = self.nc
 
-        # logger.warning(f"ie: {ie}, ac: {ac}")
-        # logger.warning(f"ia: {ia}")
+        if verbose:
+            logger.warning(f"ie: {ie}, ac: {ac}")
+            logger.warning(f"ia: {ia}")
         if ec == 1.0:
             y = g1 * math.sqrt(2.0 * qc**3)
             for i in range(ie - ia + 1):
@@ -227,6 +238,9 @@ class MonteCarlo:
         xc = rc * cd
         yc = rc * sd
         vc = math.sqrt(g2 / (qc * (1.0 + ec)))
+
+        if verbose:
+            pbar = tqdm(total=ie - ia, desc=f"[INFO] #iteration: {self.num_iter_montecarlo:.2e}")
 
         for i in range(ie - ia):
             am = self.param_03 * pig * (i + ia)
@@ -335,5 +349,9 @@ class MonteCarlo:
                     else:
                         y = math.exp(self.exp_val * x**2)
                         self.f[n, j] += (self.t[i + 1] - self.t[i]) * y * de / rs * self.k
+            if verbose:
+                pbar.update(1)
+        if verbose:
+            pbar.close()
 
         return self.f

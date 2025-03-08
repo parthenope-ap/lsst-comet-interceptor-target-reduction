@@ -38,11 +38,11 @@ def parse_comet(args: dict[str, Any]) -> tuple[dict[str, Any], pd.DataFrame]:
             "param_02": getattr(constants_module, "MC_PARAM_02", None),
             "param_03": getattr(constants_module, "MC_PARAM_03", None),
             # second free parameter: dust velocity v_d (km/s, 1AU)
-            # "param_3" : getattr(constants_module, "MC_PARAM_3", None),
+            "param_3": getattr(constants_module, "MC_PARAM_3", None),
             # first free parameter: -1/2 sigma ** 2
-            # "exp_val": getattr(constants_module, "EXP_VAL", None),
+            "exp_val": getattr(constants_module, "EXP_VAL", None),
             # third free parameter k (heliocentric distance exponent)
-            # "k" : getattr(constants_module, "K", None),
+            "k": getattr(constants_module, "K", None),
         },
         "scoring_fn_kwargs": {
             "matrix_size": getattr(constants_module, "nc", 100),
